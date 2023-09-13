@@ -1,6 +1,6 @@
 # Deep learning of first-order nonlinear hyperbolic conservation law solvers
 
-**FVschemesOptim** is a Python package that contains the codebase for the paper *" Deep learning of first-order nonlinear hyperbolic conservation law solvers "*. The results presented in the paper can be reproduced using the scripts contained in the folder `Training Scripts`. 
+**FVschemesOptim** is a Python package that contains the codebase for the paper *"Deep learning of first-order nonlinear hyperbolic conservation law solvers"*. The results presented in the paper can be reproduced using the scripts contained in the folder `Training Scripts`. 
 
 
 - [**Abstract**](https://github.com/VictorMorand/FVschemesOptim#abstract)
@@ -74,7 +74,9 @@ Several datasets are provided along with the package:
 | 1wave.npy    | Solution of non-local model with one wave                         | 0.05    | 0.05    | (200,100)  |
 | 5waves.npy   | Solution of non-local model with five wave                        | 0.05    | 0.05    | (200,100)  |
 | LWRexact.npy | Discretized Exact solution of LWR model                           | 1/3     | 1/3     | (150,100)  |
-| LaxHopfHD.npy  | Finely discretized solution computed with a Lax-Hopf solver | 0.02    | 0.02    | (500,250) |
+| LaxHopfHD.npy  | Finely discretized solution of LWR computed with a Lax-Hopf solver | 0.02    | 0.02    | (500,250) |
+
+One can also easily generate exact discretized solutions using the tools provided in `Baselines/LWR.py`.
 
 ### Quick visualization
 We also provide some tools to load, save and visualize data arrays:
