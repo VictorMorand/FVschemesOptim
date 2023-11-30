@@ -37,9 +37,10 @@ $\partial_{t}\rho+\partial_{x}\left( \rho \left(1 - \tfrac{\rho}{4}\right)\right
 
 `FVschemesOptim` depends mainly on Pytorch and numpy, we recommand installing PyTorch with the Proper CUDA version from [here](https://pytorch.org/get-started/locally/).
 
-`FVschemesOptim` can then be installed directly from source with:
+`FVschemesOptim` can then be installed with:
 ```sh
-pip install git+https://github.com/VictorMorand/FVschemesOptim
+git clone https://github.com/VictorMorand/FVschemesOptim
+pip install -e . 
 ```
 
 # Usage Tutorial
