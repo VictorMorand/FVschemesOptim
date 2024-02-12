@@ -5,6 +5,7 @@ from tqdm import tqdm
 from math import sqrt
 from trafsyn.utils import Qdata
 from typing import Any, Tuple, Optional, List
+from scipy.special import lambertw
 
 ################################ EXPLICIT SOLUTIONS ################################ 
 def func1(x,t)->float:
@@ -161,6 +162,49 @@ def Triangular_RiemannSolution(x,t,c1  = 1,
         else:
             return r_c
 
+def Underwood_RiemannSolution(x,t,c1  = 1,
+                        c2  = 2,
+                        v   = 1,
+                        rmax= 4,
+                        ) -> float:
+    """Riemann soluton for LWR equation using Greenschield Fundamental Diagram
+        with initial condition c1 if x<0 else c2
+    Args:
+        x,t (floats): point of evaluation
+        c1 (float): left (x<0) initial density
+        c2 (float): right (x>0) initial density
+        v (float): free flow velocity (greenshield)
+        rmax (float): maximum density  (greenshield)
+    """
+
+    def fu(r):
+        return v * r * np.exp(-r/rmax)
+
+    def fu_p(r):
+        return v * (1-r/rmax) * np.exp(-r/rmax)
+
+    def fu_p_inv(r):
+        return v * rmax * ( 1 - lambertw(np.e * r) )
+
+    #  c1 < c2 : Simple shockwave
+    if c1 <= c2:
+        slope = (fu(c2) - fu(c1))/(c2-c1)
+        if x <= slope * t:
+            return c1
+        else:
+            return c2
+    else:
+        s1 = fu_p(c1)
+        s2 = fu_p(c2)
+
+        if x <= s1*t:
+            return c1
+        elif x >=  s2*t:
+            return c2
+        else:
+            return fu_p_inv(x/t)
+
+
 ################################ EXPLICIT DISCRETIZERS ################################ 
 
 def GenerateQdata1(dx,dt,Nts) -> Qdata:
@@ -315,6 +359,67 @@ def Generate_Tri_Riemann_Qdata(dx,dt,
     #normalize and return
     return Qdata(q_lwr/N_disc, dx= dx, dt=dt)
 
+def Generate_UnderWood_Riemann_Qdata(dx,dt,
+                            c1: float,
+                            c2: float,
+                            Nts:int = 100,
+                            L:float=50,
+                            x0:float = 25,
+                            v:float = 1.,
+                            rmax:float = 4.,
+                            verbose = False) -> Qdata:
+    """ Generate a Qdata object containing the solution of the Riemann problem of LWR-Underwood model
+        associated with the initial condition:
+     rho(x,t=0) = c1 if x<L/2 else c2       for x \in [0,L] 
+
+     Args: 
+        dx (float): cell x length
+        dt (float): duration of timestep
+        Nts (int) : number of timesteps to compute
+        c1 (float): left (x<0) initial density
+        c2 (float): right (x>0) initial density
+        L (float): Length of the x space to discretize: x \in [0,L]
+        x0 (float): location of initial density jump
+        v (float): free flow velocity (underwood model)
+        rmax (float): jam density  (Underwood model)
+    Returns:
+        Qdata: a Qdata objects containing the discretized Riemann solution.
+    """
+    
+    CFL = v * dt / dx
+
+    N_disc = 5
+    Nx = int(L/dx) + 1
+    Nx_raw = N_disc * Nx
+    dxr = dx/N_disc
+    X = np.linspace( dxr/2, (Nx_raw-.5) * dxr,Nx_raw)
+    T = np.linspace( 0, (Nts-1) * dt, Nts)
+
+    q_raw = np.zeros((Nx_raw,Nts))
+    q_lwr = np.zeros((Nx,Nts))
+    
+    if verbose:
+        print("CFL=",CFL)
+        print("grid shape:", q_lwr.shape)
+    
+    #Sample exact values of the solution on a finer grid
+    for t_i in range(len(T)):
+            q_raw[:,t_i] = [Underwood_RiemannSolution(
+                            x - x0,
+                            T[t_i],
+                            c1=c1,
+                            c2=c2,
+                            v=v,
+                            rmax=rmax,
+                            ) for x in X]
+
+    #Aggregate data on x to have the real FV cell values
+    for i in range(Nx):
+                q_lwr[i,:] = np.sum(q_raw[N_disc*i:N_disc*(i+1), :],axis=0)
+    #normalize and return
+    return Qdata(q_lwr/N_disc, dx= dx, dt=dt)
+
+
 ################ Generate Riemann Waves Training Set  ################################
 
 def GenerateGrRiemannTrainingSet(
@@ -450,6 +555,72 @@ def GenerateTriRiemannTrainingSet(
                                 r_c=r_c,
                                 v_c=v_c,
                                 rmax=rmax,
+                                ))
+        #save training dataset
+        if save:
+            with open(filePath, 'wb') as file:
+                pickle.dump(RiemannDataQs, file)
+                if verbose: print("save dataset File as ",fileName)
+    #returns the Train Set !    
+    return RiemannDataQs 
+
+
+def GenerateUnderwoodRiemannTrainingSet(
+    N:int,
+    Nts:int,
+    dx:float,
+    dt:float,
+    plot:bool = False,
+    v: float = 1,
+    rmax: float = 4,
+    verbose:bool=True,
+    save=True,
+    )-> List[Qdata]:    
+    """ Generates a set of discretized Riemann waves
+    TODO proper description
+    """
+
+    #folder to save generated data for further training
+    dirPath = os.path.join(pkg_resources.resource_filename('trafsyn', 'data/'),'trainSet')
+    if not os.path.exists(dirPath): os.makedirs(dirPath)
+
+    # File in which we save or load the dataset 
+    fileName = f"{N*(N-1)}Riemann_Underwood_Waves_dx{dx}_dt{dt}Nts{Nts}.pkl"
+    filePath = os.path.join(dirPath,fileName)
+    
+    # Load dataset if exists, generate it otherwise
+    if save and os.path.exists(filePath):
+        # Load the list from the file
+        print("Loading existing data")
+        with open(filePath, 'rb') as file:
+            RiemannDataQs = pickle.load(file)
+        Nts = RiemannDataQs[0].shape[1]
+        if verbose: print(f"loaded {len(RiemannDataQs)} Riemann waves with shape (Nx,Nt)={RiemannDataQs[0].shape}\n \
+            \tdx={RiemannDataQs[0].dx},\n \
+            \tdt={RiemannDataQs[0].dt}")
+    else:
+        # Ensure that each solution has free flow BC i.e the waves don't hit the border
+        L = v * (Nts + 1) * dt
+        x0 = 2*dx # location of the initial density jump: for underwood model, the waves only go to the right !
+        RiemannDataQs = []
+        X = np.linspace(0,rmax,N)
+        points = np.array([[c1,c2] for c1 in X for c2 in X if c1 != c2])
+      
+        if verbose: print(f"generated {len(points)} points in [0,{rmax}]²: generating associated Riemann solutions...")
+        if plot:
+            plt.figure(figsize=(2,2))
+            plt.scatter(points[:,0],points[:,1],s = 3)
+            plt.show()
+            
+        for pt in tqdm(points):
+            c1,c2 = pt
+            if c1 != c2:
+                RiemannDataQs.append(Generate_UnderWood_Riemann_Qdata( dx=dx, dt=dt,
+                                c1= c1,
+                                c2= c2,
+                                L=L,
+                                Nts=Nts,
+                                x0 = x0,
                                 ))
         #save training dataset
         if save:
