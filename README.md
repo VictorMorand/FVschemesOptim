@@ -27,7 +27,7 @@ The proposed method can be applied to the inverse problem, i.e., the data-driven
 physical laws for real-world flux phenomena.
 
 We showcase here side by side animations of solutions of the following  LWR-Greenshield model :
-$\partial_{t}\rho+\partial_{x}\left( \rho \left(1 - \tfrac{\rho}{4}\right)\right) = 0 $ computed by the Godunov scheme (left) and by our new model (right). The discretization grid is 100x100, $\delta x = \delta t = 0.5$.
+$\partial_{t}\rho+\partial_{x}\left( \rho \left(1 - \tfrac{\rho}{4}\right)\right) = 0$ computed by the Godunov scheme (left) and by our new model (right). The discretization grid is 100x100, $\delta x = \delta t = 0.5$.
 
 | ![GIF 1](./examples/Godunov-pred100x100.gif) | ![GIF 2](./examples/(0,1)SpeedModel-pred100x100.gif) |
 |:--------------------------:|:--------------------------:|
@@ -40,12 +40,13 @@ $\partial_{t}\rho+\partial_{x}\left( \rho \left(1 - \tfrac{\rho}{4}\right)\right
 `FVschemesOptim` can then be installed with:
 ```sh
 git clone https://github.com/VictorMorand/FVschemesOptim
+cd FVschemesOptim
 pip install -e . 
 ```
 
 # Usage Tutorial
 
-This package uses the general framework for first order FVM schmes available in [this repository](https://github.com/NiMlr/traffic-model-synthesis). We detail here some of the main functinnalities.  
+This package uses the general framework for first order FVM schmes available in [this repository](https://github.com/NiMlr/traffic-model-synthesis). We detail here some of the main functionalities.  
 
 ## Data class
  
