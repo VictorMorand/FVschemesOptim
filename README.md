@@ -10,7 +10,7 @@
 - [**Implemented models**](https://github.com/VictorMorand/FVschemesOptim#implemented-models)
   - [**1D CNN schemes**](https://github.com/VictorMorand/FVschemesOptim#our-models)
   - [**Baseline schemes**](https://github.com/VictorMorand/FVschemesOptim#baselines)
-- [**Citation**]([#](https://github.com/VictorMorand/FVschemesOptim#Citation)
+- [**Citation**](https://github.com/VictorMorand/FVschemesOptim#Citation)
 
 # Abstract
 
