@@ -10,7 +10,7 @@
 - [**Implemented models**](https://github.com/VictorMorand/FVschemesOptim#implemented-models)
   - [**1D CNN schemes**](https://github.com/VictorMorand/FVschemesOptim#our-models)
   - [**Baseline schemes**](https://github.com/VictorMorand/FVschemesOptim#baselines)
-
+- [**Citation**]([#](https://github.com/VictorMorand/FVschemesOptim#Citation)
 
 # Abstract
 
@@ -249,4 +249,21 @@ LxFmodel = LaxFriedrichs(f=f)
 print(f"l2 error of LaxFriedrichs on data : {evaluate(LxFmodel,dataHD,loss='l2',plot=False,verbose=False)}")
 
 >>> l2 error of LaxFriedrichs on data : 1.4117571542273117
+```
+
+## Citation
+If you found this work useful, please cite the associated paper
+```
+@article{MORAND2024113114,
+title = {Deep learning of first-order nonlinear hyperbolic conservation law solvers},
+journal = {Journal of Computational Physics},
+volume = {511},
+pages = {113114},
+year = {2024},
+issn = {0021-9991},
+doi = {https://doi.org/10.1016/j.jcp.2024.113114},
+url = {https://www.sciencedirect.com/science/article/pii/S0021999124003632},
+author = {Victor Morand and Nils Müller and Ryan Weightman and Benedetto Piccoli and Alexander Keimer and Alexandre M. Bayen},
+keywords = {Finite volume methods, Numerical schemes, Neural networks, Approximation of numerical schemes for conservation laws by neural nets, Approximation of numerical schemes for conservation laws by polynomials},
+}
 ```
